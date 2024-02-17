@@ -11,6 +11,11 @@ import java.util.concurrent.TimeUnit
 import org.slf4j.event.*
 
 fun Application.configureMonitoring() {
+    install(CallLogging) {
+        level = Level.INFO
+        filter { call -> call.request.path().startsWith("/") }
+        callIdMdc("call-id")
+    }
     install(DropwizardMetrics) {
         Slf4jReporter.forRegistry(registry)
             .outputTo(this@configureMonitoring.log)
@@ -18,11 +23,6 @@ fun Application.configureMonitoring() {
             .convertDurationsTo(TimeUnit.MILLISECONDS)
             .build()
             .start(10, TimeUnit.SECONDS)
-    }
-    install(CallLogging) {
-        level = Level.INFO
-        filter { call -> call.request.path().startsWith("/") }
-        callIdMdc("call-id")
     }
     install(CallId) {
         header(HttpHeaders.XRequestId)
