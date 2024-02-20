@@ -70,3 +70,9 @@ tasks.named<Test>("test") {
 tasks.test {
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
+
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_21)
+    }
+}

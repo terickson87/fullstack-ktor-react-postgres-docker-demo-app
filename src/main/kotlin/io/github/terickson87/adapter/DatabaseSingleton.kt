@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object DatabaseSingleton {
     fun init() {
         val database = Database.connect(
-            url = "jdbc:postgresql://localhost:5438/postgres",
+            url = "jdbc:postgresql://postgres:5432/postgres",
             driver = "org.postgresql.Driver",
             user = "postgres",
             password = "postgres"
