@@ -1,13 +1,16 @@
+@file:UseSerializers(InstantSerializer::class)
+
 package io.github.terickson87.domain
 
 import io.github.terickson87.plugins.InstantSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import java.time.Instant
 
 @Serializable
 data class NoteRequest(val body: String)
 
-@Serializable(InstantSerializer::class)
+@Serializable
 data class NoteResponse(val id: Int, val createdAt: Instant, val body: String)
 
 @Serializable

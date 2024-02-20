@@ -6,18 +6,17 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNotNull
-import org.jetbrains.exposed.sql.javatime.CurrentTimestamp
-import org.jetbrains.exposed.sql.javatime.timestampWithTimeZone
+import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class NotesService(private val database: Database) {
 
     object NotesTable : IntIdTable() {
-        val createdAt = timestampWithTimeZone("created_at")
-        val updatedAt = timestampWithTimeZone("updated_at")
+        val createdAt = datetime("created_at")
+        val updatedAt = datetime("updated_at")
         val body = text("body")
     }
 
@@ -32,8 +31,8 @@ class NotesService(private val database: Database) {
         transaction(database) {
             DbNote.new {
                 body = noteRequest.body
-                createdAt = Instant.now().atOffset(ZoneOffset.UTC)
-                updatedAt = Instant.now().atOffset(ZoneOffset.UTC)
+                createdAt = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+                updatedAt = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
             }
         }
 
@@ -52,7 +51,7 @@ class NotesService(private val database: Database) {
         getNoteById(id)?.let {
             transaction(database) {
                 it.body = noteRequest.body
-                it.updatedAt = Instant.now().atOffset(ZoneOffset.UTC)
+                it.updatedAt = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
             }
         }?.let {
             getNoteById(id)
