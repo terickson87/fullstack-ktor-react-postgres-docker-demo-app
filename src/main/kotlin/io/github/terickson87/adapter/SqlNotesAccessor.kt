@@ -1,6 +1,7 @@
 package io.github.terickson87.adapter
 
 import io.github.terickson87.adapter.accessor.NotesAccessor
+import io.github.terickson87.domain.Note
 import io.github.terickson87.domain.NoteRequest
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -12,6 +13,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+
 
 class SqlNotesAccessor(private val database: Database) : NotesAccessor {
 
@@ -32,27 +34,37 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
         var body by NotesTable.body
     }
 
-    override fun createNote(noteRequest: NoteRequest): DbNote =
+    private fun DbNote.toNote(): Note =
+        Note(this.id.value,
+            this.createdAt.toInstant(DB_ZONE_OFFSET_UTC),
+            this.updatedAt.toInstant(DB_ZONE_OFFSET_UTC),
+            this.body)
+
+    override fun createNote(noteRequest: NoteRequest): Note =
         transaction(database) {
             DbNote.new {
                 body = noteRequest.body
                 createdAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
                 updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
             }
-        }
+        }.toNote()
 
-    override fun getAllNotes(): List<DbNote> =
+    override fun getAllNotes(): List<Note> =
         transaction(database) {
             DbNote.all().toList()
+                .map { it.toNote() }
         }
 
-    override fun getNoteById(id: Int): DbNote? =
+    override fun getNoteById(id: Int): Note? =
+        getDbNoteById(id)?.toNote()
+
+    private fun getDbNoteById(id: Int): DbNote? =
         transaction(database) {
             DbNote.findById(id)
         }
 
-    override fun updateNoteById(id: Int, noteRequest: NoteRequest): DbNote? =
-        getNoteById(id)?.let {
+    override fun updateNoteById(id: Int, noteRequest: NoteRequest): Note? =
+        getDbNoteById(id)?.let {
             transaction(database) {
                 it.body = noteRequest.body
                 it.updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);

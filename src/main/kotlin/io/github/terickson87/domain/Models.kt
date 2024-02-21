@@ -11,7 +11,9 @@ import java.time.Instant
 data class NoteRequest(val body: String)
 
 @Serializable
-data class NoteResponse(val id: Int, val createdAt: Instant, val body: String)
+data class NoteResponse(val id: Int, val createdAt: Instant, val modifiedAt: Instant, val body: String)
 
 @Serializable
 data class ErrorResponse(val message: String)
+
+data class Note(val id: Int, val createdAt: Instant, val updatedAt: Instant, val body: String)
