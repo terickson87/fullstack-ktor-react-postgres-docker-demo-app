@@ -2,6 +2,7 @@ package io.github.terickson87.adapter
 
 import io.github.terickson87.domain.NoteRequest
 import io.kotest.common.runBlocking
+import io.kotest.core.spec.Order
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.date.shouldBeAfter
