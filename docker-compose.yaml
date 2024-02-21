@@ -2,7 +2,7 @@ services:
   api:
     container_name: ktor-api
     build: .
-    restart: always
+    restart: no
     ports:
       - '8080:8080'
     depends_on:
@@ -12,7 +12,7 @@ services:
   postgres:
     container_name: postgres
     image: postgres:16
-    restart: always
+    restart: no
     ports:
       - '5432:5432'
     volumes:
