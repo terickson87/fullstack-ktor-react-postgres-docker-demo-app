@@ -19,7 +19,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class NotesTableServiceTest : AnnotationSpec() {
+class SqlNotesAccessorTest : AnnotationSpec() {
 
     companion object {
         private const val DB_NAME = "test-db"
@@ -34,7 +34,7 @@ class NotesTableServiceTest : AnnotationSpec() {
         const val TEST_NOTE_BODY = "Test Note Body"
         const val UPDATED_NOTE_BODY = "Updated Test Note Body"
 
-        lateinit var notesService: NotesService
+        lateinit var sqlNotesAccessor: SqlNotesAccessor
     }
 
     @BeforeAll
@@ -48,10 +48,10 @@ class NotesTableServiceTest : AnnotationSpec() {
         )
 
         transaction(database) {
-            SchemaUtils.create(NotesService.NotesTable)
+            SchemaUtils.create(SqlNotesAccessor.NotesTable)
         }
 
-        notesService = NotesService(database)
+        sqlNotesAccessor = SqlNotesAccessor(database)
     }
 
     @AfterAll
@@ -65,30 +65,35 @@ class NotesTableServiceTest : AnnotationSpec() {
         val createNow = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
         val createDuration = Duration.ofMillis(100)
         val noteRequest = NoteRequest(TEST_NOTE_BODY)
-        val newDbNote = notesService.createNote(noteRequest)
+        val newDbNote = sqlNotesAccessor.createNote(noteRequest)
         newDbNote.id.value.shouldBeTypeOf<Int>()
         newDbNote.createdAt.shouldBeWithin(createDuration, createNow)
         newDbNote.updatedAt.shouldBeWithin(createDuration, createNow)
         newDbNote.body.shouldBe(TEST_NOTE_BODY)
 
         //Read
-        val readDbNote = notesService.getNoteById(newDbNote.id.value)
+        val readDbNote = sqlNotesAccessor.getNoteById(newDbNote.id.value)
         readDbNote.shouldNotBeNull().id.value.shouldBe(newDbNote.id.value)
         readDbNote.createdAt.shouldBeWithin(createDuration, createNow)
         readDbNote.updatedAt.shouldBeWithin(createDuration, createNow)
 
+        //Read All
+        val readDbNotes = sqlNotesAccessor.getAllNotes()
+        readDbNotes.size.shouldBe(1)
+        readDbNotes[0].id.value.shouldBe(newDbNote.id.value)
+
         //Update
         val updateRequest = NoteRequest(UPDATED_NOTE_BODY)
-        val updatedDbNote = notesService.updateNoteById(newDbNote.id.value, updateRequest)
+        val updatedDbNote = sqlNotesAccessor.updateNoteById(newDbNote.id.value, updateRequest)
         updatedDbNote.shouldNotBeNull().id.value.shouldBe(newDbNote.id.value)
         updatedDbNote.createdAt.shouldBeWithin(createDuration, createNow)
         updatedDbNote.updatedAt.shouldBeAfter(updatedDbNote.createdAt)
         updatedDbNote.body.shouldBe(UPDATED_NOTE_BODY)
 
         //Delete
-        val wasDeleted = notesService.deleteNoteById(newDbNote.id.value)
+        val wasDeleted = sqlNotesAccessor.deleteNoteById(newDbNote.id.value)
         wasDeleted.shouldBeTrue()
-        val deletedDbNote = notesService.getNoteById(newDbNote.id.value)
+        val deletedDbNote = sqlNotesAccessor.getNoteById(newDbNote.id.value)
         deletedDbNote.shouldBeNull()
     }
 

@@ -1,5 +1,6 @@
 package io.github.terickson87.adapter
 
+import io.github.terickson87.adapter.accessor.NotesAccessor
 import io.github.terickson87.domain.NoteRequest
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -12,7 +13,11 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class NotesService(private val database: Database) {
+class SqlNotesAccessor(private val database: Database) : NotesAccessor {
+
+    companion object {
+        val DB_ZONE_OFFSET_UTC: ZoneOffset = ZoneOffset.UTC
+    }
 
     object NotesTable : IntIdTable() {
         val createdAt = datetime("created_at")
@@ -27,37 +32,36 @@ class NotesService(private val database: Database) {
         var body by NotesTable.body
     }
 
-    suspend fun createNote(noteRequest: NoteRequest): DbNote =
+    override fun createNote(noteRequest: NoteRequest): DbNote =
         transaction(database) {
             DbNote.new {
                 body = noteRequest.body
-                createdAt = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-                updatedAt = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+                createdAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
+                updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
             }
         }
 
-
-    suspend fun getAllNotes(): List<DbNote> =
+    override fun getAllNotes(): List<DbNote> =
         transaction(database) {
             DbNote.all().toList()
         }
 
-    suspend fun getNoteById(id: Int): DbNote? =
+    override fun getNoteById(id: Int): DbNote? =
         transaction(database) {
             DbNote.findById(id)
         }
 
-    suspend fun updateNoteById(id: Int, noteRequest: NoteRequest): DbNote? =
+    override fun updateNoteById(id: Int, noteRequest: NoteRequest): DbNote? =
         getNoteById(id)?.let {
             transaction(database) {
                 it.body = noteRequest.body
-                it.updatedAt = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+                it.updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
             }
         }?.let {
             getNoteById(id)
         }
 
-    suspend fun deleteNoteById(id: Int): Boolean =
+    override fun deleteNoteById(id: Int): Boolean =
         transaction(database) {
             DbNote.findById(id)?.delete()?.let { true } ?: false
         }

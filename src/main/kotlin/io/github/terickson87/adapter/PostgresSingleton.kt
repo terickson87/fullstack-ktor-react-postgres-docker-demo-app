@@ -4,9 +4,11 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
-object DatabaseSingleton {
+object PostgresSingleton {
+
+    private lateinit var database: Database
     fun init() {
-        val database = Database.connect(
+        database = Database.connect(
             url = "jdbc:postgresql://postgres:5432/postgres",
             driver = "org.postgresql.Driver",
             user = "postgres",
@@ -14,7 +16,16 @@ object DatabaseSingleton {
         )
 
         transaction(database) {
-            SchemaUtils.create(NotesService.NotesTable)
+            SchemaUtils.create(SqlNotesAccessor.NotesTable)
         }
     }
+
+    fun getDatabase(): Database =
+        when(this::database.isInitialized) {
+            true -> database
+            false -> {
+                init()
+                database
+            }
+        }
 }
