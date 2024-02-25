@@ -25,14 +25,15 @@ class IdValidator {
                 return Output.BadId(id)
             }
         }
-        suspend inline fun ApplicationCall.validateCallId(block:(id :Int) -> Unit) =
+        suspend inline fun ApplicationCall.validateCallId(block:(id :Int) -> Unit): Unit =
             this.parameters["id"]
-                ?.let { Input(it) }
-                ?.let { validate(it) }
-                ?.let {
+                .let { Input(it) }
+                .let { validate(it) }
+                .let {
                     when(it) {
                         is Output.BadId ->
                             this.respondText("ID '${it.id}' is not an integer", status = HttpStatusCode.BadRequest)
+
                         is Output.MissingID -> this.respondText("Missing ID", status = HttpStatusCode.BadRequest)
                         is Output.Success -> block(it.id)
                     }

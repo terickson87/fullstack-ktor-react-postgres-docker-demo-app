@@ -1,59 +1,77 @@
 package io.github.terickson87.routing
 
+import io.github.terickson87.adapter.accessor.NotesAccessor
+import io.github.terickson87.domain.Note
 import io.github.terickson87.util.RouteTestFuncs
 import io.github.terickson87.util.testGet
 import io.github.terickson87.util.testPostJsonBody
+import io.github.terickson87.domain.toNoteResponse
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlin.test.assertEquals
 
 class NoteRoutingTest : FunSpec({
-    test("A call to /notes/all should return as expected") {
+    val noteId = 17
+    val createdAt = LocalDateTime.parse("2024-02-25T10:15:00").atZone(ZoneId.of("America/Phoenix")).toInstant()
+    val updatedAt = LocalDateTime.parse("2024-02-25T10:26:30").atZone(ZoneId.of("America/Phoenix")).toInstant()
+    val note = Note(17, createdAt, updatedAt, "Test Body")
+    val noteResponse = note.toNoteResponse()
+
+    val notesAccessorMock: NotesAccessor = mockk()
+    every { notesAccessorMock.getNoteById(any())} returns note
+    every { notesAccessorMock.createNote(any()) } returns note
+
+    test("/notes/all should return as expected") {
         RouteTestFuncs.testGet("/notes/all") {
             runBlocking {
-                assertEquals(HttpStatusCode.OK, it.status)
+                it.status.shouldBe(HttpStatusCode.OK)
                 assertEquals("Get All Notes", it.bodyAsText())
             }
         }
     }
 
-    test("A call to /notes/{id} should return as expected") {
-        val id = 17
-        RouteTestFuncs.testGet("/notes/$id") {
+    test("/notes/{id} should return as expected") {
+        RouteTestFuncs.testGet("/notes/$noteId", notesAccessorMock) {
             runBlocking {
-                assertEquals(HttpStatusCode.OK, it.status)
-                assertEquals("Get id #$id", it.bodyAsText())
+                it.status.shouldBe(HttpStatusCode.OK)
+                assertEquals(noteResponse, it.body())
             }
         }
     }
 
-    test("A call to /notes/new should return as expected") {
-        val newBody = """{ "field": "new" }"""
-        RouteTestFuncs.testPostJsonBody("/notes/new", newBody) {
+    test("/notes/new should return as expected") {
+        val newBody = """{ "body": "Test New Body" }"""
+        RouteTestFuncs.testPostJsonBody("/notes/new", newBody, notesAccessorMock) {
             runBlocking {
-                assertEquals(HttpStatusCode.OK, it.status)
-                assertEquals("Post new contents:'$newBody'", it.bodyAsText())
+                it.status.shouldBe(HttpStatusCode.OK)
+                assertEquals(noteResponse, it.body())
             }
         }
     }
 
-    test("A call to /notes/update should return as expected") {
+    test("/notes/update should return as expected") {
         val updateBody = """{ "field": "update" }"""
         RouteTestFuncs.testPostJsonBody("/notes/update", updateBody) {
             runBlocking {
-                assertEquals(HttpStatusCode.OK, it.status)
+                it.status.shouldBe(HttpStatusCode.OK)
                 assertEquals("Post update contents:'$updateBody'", it.bodyAsText())
             }
         }
     }
 
-    test("A call to /notes/delete should return as expected") {
+    test("/notes/delete should return as expected") {
         val deleteBody = """{ "field": "delete" }"""
         RouteTestFuncs.testPostJsonBody("/notes/delete", deleteBody) {
             runBlocking {
-                assertEquals(HttpStatusCode.OK, it.status)
+                it.status.shouldBe(HttpStatusCode.OK)
                 assertEquals("Post delete contents:'$deleteBody'", it.bodyAsText())
             }
         }

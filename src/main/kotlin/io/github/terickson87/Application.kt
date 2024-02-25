@@ -1,6 +1,7 @@
 package io.github.terickson87
 
 import io.github.terickson87.adapter.PostgresSingleton
+import io.github.terickson87.adapter.SqlNotesAccessor
 import io.github.terickson87.plugins.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -16,5 +17,5 @@ fun Application.module() {
     configureSerialization()
     configureHTTP()
     configureMonitoring()
-    configureRouting()
+    configureRouting(SqlNotesAccessor(PostgresSingleton.getDatabase()))
 }
