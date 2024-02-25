@@ -2,7 +2,6 @@ package io.github.terickson87.adapter
 
 import io.github.terickson87.adapter.accessor.NotesAccessor
 import io.github.terickson87.domain.Note
-import io.github.terickson87.domain.NoteRequest
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -40,10 +39,10 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
             this.updatedAt.toInstant(DB_ZONE_OFFSET_UTC),
             this.body)
 
-    override fun createNote(noteRequest: NoteRequest): Note =
+    override fun createNote(createBody: String): Note =
         transaction(database) {
             DbNote.new {
-                body = noteRequest.body
+                body = createBody
                 createdAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
                 updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
             }
@@ -63,10 +62,10 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
             DbNote.findById(id)
         }
 
-    override fun updateNoteById(id: Int, noteRequest: NoteRequest): Note? =
+    override fun updateNoteById(id: Int, body: String): Note? =
         getDbNoteById(id)?.let {
             transaction(database) {
-                it.body = noteRequest.body
+                it.body = body
                 it.updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
             }
         }?.let {

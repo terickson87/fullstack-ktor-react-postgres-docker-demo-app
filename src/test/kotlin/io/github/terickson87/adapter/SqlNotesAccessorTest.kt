@@ -1,6 +1,5 @@
 package io.github.terickson87.adapter
 
-import io.github.terickson87.domain.NoteRequest
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -17,6 +16,10 @@ import org.testcontainers.containers.PostgreSQLContainer
 import java.time.Instant
 
 class SqlNotesAccessorTest : AnnotationSpec() {
+
+    // TODO Change to Kotest FunSpec and use prepareSpec and finalizeSpec for BeforeAll and AfterAll respectively
+
+    // TODO look into using https://kotest.io/docs/extensions/test_containers.html
 
     companion object {
         private const val DB_NAME = "test-db"
@@ -60,8 +63,7 @@ class SqlNotesAccessorTest : AnnotationSpec() {
     fun crudNote() = runBlocking {
         //Create
         val beforeCreate = Instant.now()
-        val noteRequest = NoteRequest(TEST_NOTE_BODY)
-        val newNote = sqlNotesAccessor.createNote(noteRequest)
+        val newNote = sqlNotesAccessor.createNote(TEST_NOTE_BODY)
         newNote.id.shouldBeTypeOf<Int>()
         newNote.body.shouldBe(TEST_NOTE_BODY)
         val afterCreate = Instant.now()
@@ -85,8 +87,7 @@ class SqlNotesAccessorTest : AnnotationSpec() {
 
         //Update
         val beforeUpdate = Instant.now()
-        val updateRequest = NoteRequest(UPDATED_NOTE_BODY)
-        val updatedDbNote = sqlNotesAccessor.updateNoteById(newNote.id, updateRequest)
+        val updatedDbNote = sqlNotesAccessor.updateNoteById(newNote.id, UPDATED_NOTE_BODY)
         updatedDbNote.shouldNotBeNull().id.shouldBe(newNote.id)
         updatedDbNote.body.shouldBe(UPDATED_NOTE_BODY)
         val afterUpdate = Instant.now()
