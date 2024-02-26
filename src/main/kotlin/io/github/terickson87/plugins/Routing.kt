@@ -9,9 +9,6 @@ import io.ktor.server.routing.*
 fun Application.configureRouting(notesAccessor: NotesAccessor) {
     routing {
         val noteRouting = NoteRouting(notesAccessor)
-        get("/") {
-            call.respondText("Hello World!")
-        }
         noteRouting.noteRouting(this)
     }
 }
