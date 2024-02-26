@@ -37,7 +37,7 @@ fun RouteTestFuncs.Companion.baseCall(notesAccessor: NotesAccessor? = null, bloc
 
 fun RouteTestFuncs.Companion.testGet(
     path: String,
-    notesAccessor: NotesAccessor? = null,
+    notesAccessor: NotesAccessor,
     verifyBlock: (HttpResponse) -> Unit): Unit =
     testApplication {
         val client = createClient {
@@ -51,7 +51,7 @@ fun RouteTestFuncs.Companion.testGet(
         }
         application {
             configureSerialization()
-            configureRouting(notesAccessor ?: mockk())
+            configureRouting(notesAccessor)
         }
         client.get(path).apply { verifyBlock(this) }
     }
@@ -59,7 +59,7 @@ fun RouteTestFuncs.Companion.testGet(
 inline fun <reified T> RouteTestFuncs.Companion.testPostJsonBody(
     path: String,
     bodyToSet: T,
-    notesAccessor: NotesAccessor? = null,
+    notesAccessor: NotesAccessor,
     crossinline verifyBlock: (HttpResponse) -> Unit): Unit =
     testApplication {
         val client = createClient {
@@ -73,7 +73,7 @@ inline fun <reified T> RouteTestFuncs.Companion.testPostJsonBody(
         }
         application {
             configureSerialization()
-            configureRouting(notesAccessor ?: mockk())
+            configureRouting(notesAccessor)
         }
 
         client.post(path) {

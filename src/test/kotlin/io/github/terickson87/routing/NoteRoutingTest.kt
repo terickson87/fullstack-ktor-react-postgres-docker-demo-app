@@ -31,7 +31,7 @@ class NoteRoutingTest : FunSpec({
     val notesAccessorMock: NotesAccessor = mockk()
 
     test("/notes/all should return as expected") {
-        RouteTestFuncs.testGet("/notes/all") {
+        RouteTestFuncs.testGet("/notes/all", mockk()) {
             runBlocking {
                 it.status.shouldBe(HttpStatusCode.OK)
                 assertEquals("Get All Notes", it.bodyAsText())
@@ -80,10 +80,11 @@ class NoteRoutingTest : FunSpec({
     }
 
     test("/notes/delete should return as expected") {
-        RouteTestFuncs.testGet("/notes/delete/$noteId") {
+        every { notesAccessorMock.deleteNoteById(noteId) } returns true
+        RouteTestFuncs.testGet("/notes/delete/$noteId", notesAccessorMock) {
             runBlocking {
                 it.status.shouldBe(HttpStatusCode.OK)
-                assertEquals("Delete id #$noteId", it.bodyAsText())
+                assertEquals("Note ID: '${noteId}' was deleted successfully.", it.bodyAsText())
             }
         }
     }
