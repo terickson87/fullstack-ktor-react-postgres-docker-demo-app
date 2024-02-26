@@ -2,6 +2,7 @@ package io.github.terickson87.routing
 
 import io.github.terickson87.adapter.accessor.NotesAccessor
 import io.github.terickson87.domain.Note
+import io.github.terickson87.domain.NoteRequest
 import io.github.terickson87.util.RouteTestFuncs
 import io.github.terickson87.util.testGet
 import io.github.terickson87.util.testPostJsonBody
@@ -14,6 +15,8 @@ import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.test.assertEquals
@@ -27,7 +30,6 @@ class NoteRoutingTest : FunSpec({
 
     val notesAccessorMock: NotesAccessor = mockk()
     every { notesAccessorMock.getNoteById(any())} returns note
-    every { notesAccessorMock.createNote(any()) } returns note
 
     test("/notes/all should return as expected") {
         RouteTestFuncs.testGet("/notes/all") {
@@ -49,10 +51,15 @@ class NoteRoutingTest : FunSpec({
 
     test("/notes/new should return as expected") {
         val newBody = """{ "body": "Test New Body" }"""
-        RouteTestFuncs.testPostJsonBody("/notes/new", newBody, notesAccessorMock) {
+        val noteRequest = NoteRequest(newBody)
+        val noteRequestJson = Json.encodeToString(noteRequest)
+        val newNote = note.copy(body = newBody)
+        val newNoteResponse = newNote.toNoteResponse()
+        every { notesAccessorMock.createNote(any()) } returns newNote
+        RouteTestFuncs.testPostJsonBody("/notes/new", noteRequestJson, notesAccessorMock) {
             runBlocking {
                 it.status.shouldBe(HttpStatusCode.OK)
-                assertEquals(noteResponse, it.body())
+                assertEquals(newNoteResponse, it.body())
             }
         }
     }
