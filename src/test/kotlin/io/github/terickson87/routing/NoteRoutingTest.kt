@@ -2,7 +2,7 @@ package io.github.terickson87.routing
 
 import io.github.terickson87.adapter.accessor.NotesAccessor
 import io.github.terickson87.domain.Note
-import io.github.terickson87.domain.NoteRequest
+import io.github.terickson87.domain.NewNoteRequest
 import io.github.terickson87.util.RouteTestFuncs
 import io.github.terickson87.util.testGet
 import io.github.terickson87.util.testPostJsonBody
@@ -29,7 +29,6 @@ class NoteRoutingTest : FunSpec({
     val noteResponse = note.toNoteResponse()
 
     val notesAccessorMock: NotesAccessor = mockk()
-    every { notesAccessorMock.getNoteById(any())} returns note
 
     test("/notes/all should return as expected") {
         RouteTestFuncs.testGet("/notes/all") {
@@ -41,6 +40,7 @@ class NoteRoutingTest : FunSpec({
     }
 
     test("/notes/{id} should return as expected") {
+        every { notesAccessorMock.getNoteById(noteId)} returns note
         RouteTestFuncs.testGet("/notes/$noteId", notesAccessorMock) {
             runBlocking {
                 it.status.shouldBe(HttpStatusCode.OK)
@@ -50,9 +50,9 @@ class NoteRoutingTest : FunSpec({
     }
 
     test("/notes/new should return as expected") {
-        val newBody = """{ "body": "Test New Body" }"""
-        val noteRequest = NoteRequest(newBody)
-        val noteRequestJson = Json.encodeToString(noteRequest)
+        val newBody = "Test New Body"
+        val newNoteRequest = NewNoteRequest(newBody)
+        val noteRequestJson = Json.encodeToString(newNoteRequest)
         val newNote = note.copy(body = newBody)
         val newNoteResponse = newNote.toNoteResponse()
         every { notesAccessorMock.createNote(any()) } returns newNote
@@ -65,21 +65,25 @@ class NoteRoutingTest : FunSpec({
     }
 
     test("/notes/update should return as expected") {
-        val updateBody = """{ "field": "update" }"""
-        RouteTestFuncs.testPostJsonBody("/notes/update", updateBody) {
+        val updateBody = "Test Updated Body"
+        val newNoteRequest = NewNoteRequest(updateBody)
+        val noteRequestJson = Json.encodeToString(newNoteRequest)
+        val updateNote = note.copy(body = updateBody)
+        val updateNoteResponse = updateNote.toNoteResponse()
+        every { notesAccessorMock.updateNoteById(noteId, any()) } returns updateNote
+        RouteTestFuncs.testPostJsonBody("/notes/update/$noteId", noteRequestJson, notesAccessorMock) {
             runBlocking {
                 it.status.shouldBe(HttpStatusCode.OK)
-                assertEquals("Post update contents:'$updateBody'", it.bodyAsText())
+                assertEquals(updateNoteResponse, it.body())
             }
         }
     }
 
     test("/notes/delete should return as expected") {
-        val deleteBody = """{ "field": "delete" }"""
-        RouteTestFuncs.testPostJsonBody("/notes/delete", deleteBody) {
+        RouteTestFuncs.testGet("/notes/delete/$noteId") {
             runBlocking {
                 it.status.shouldBe(HttpStatusCode.OK)
-                assertEquals("Post delete contents:'$deleteBody'", it.bodyAsText())
+                assertEquals("Delete id #$noteId", it.bodyAsText())
             }
         }
     }

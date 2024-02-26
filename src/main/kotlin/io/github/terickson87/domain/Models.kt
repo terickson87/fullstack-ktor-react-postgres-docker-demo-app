@@ -8,7 +8,7 @@ import kotlinx.serialization.UseSerializers
 import java.time.Instant
 
 @Serializable
-data class NoteRequest(val body: String)
+data class NewNoteRequest(val body: String)
 
 @Serializable
 data class NoteResponse(val id: Int, val createdAt: Instant, val modifiedAt: Instant, val body: String)

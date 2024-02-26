@@ -1,10 +1,11 @@
 package io.github.terickson87.routing
 
 import io.github.terickson87.adapter.accessor.NotesAccessor
-import io.github.terickson87.domain.NoteRequest
+import io.github.terickson87.domain.NewNoteRequest
 import io.github.terickson87.domain.handlers.notes.GetNoteByIdHandler
 import io.github.terickson87.domain.handlers.notes.CreateNoteHandler
 import io.github.terickson87.domain.handlers.notes.IdValidator.Companion.validateCallId
+import io.github.terickson87.domain.handlers.notes.UpdateNoteByIdHandler
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -14,12 +15,14 @@ import io.ktor.server.routing.*
 class NoteRouting(private val notesAccessor: NotesAccessor) {
     private val createNoteHandler = CreateNoteHandler(notesAccessor)
     private val getNoteByIdHandler = GetNoteByIdHandler(notesAccessor)
+    private val updateNoteByIdHandler = UpdateNoteByIdHandler(notesAccessor)
 
     fun noteRouting(parentRoute: Route) = parentRoute {
         route("/notes") {
             get("/all") {
                 call.respondText("Get All Notes")
             }
+
             get("/{id?}") {
                 call.validateCallId { handleGetNoteByIdCall(call, it) }
             }
@@ -28,14 +31,12 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
                 handleCreateNoteCall(call)
             }
 
-            post("/update") {
-                call.receiveText()
-                    .let { call.respondText("Post update contents:'$it'") }
+            post("/update/{id?}") {
+                call.validateCallId { handleUpdateNoteByIdCall(call, it) }
             }
 
-            post("/delete") {
-                call.receiveText()
-                    .let { call.respondText("Post delete contents:'$it'") }
+            get("/delete/{id?}") {
+                call.validateCallId { call.respondText("Delete id #$it") }
             }
         }
     }
@@ -46,23 +47,38 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
             .let {
                 when (it) {
                     is GetNoteByIdHandler.Output.Success -> call.respond(it.noteResponse)
-                    is GetNoteByIdHandler.Output.IdNotFound ->
-                        call.respondText("ID '${it.id}' was not Found", status = HttpStatusCode.NotFound)
+                    is GetNoteByIdHandler.Output.IdNotFound -> handleIdNotFound(call, id)
                 }
             }
 
     private suspend fun handleCreateNoteCall(call: ApplicationCall): Unit =
-        call.receive<NoteRequest>()
+        call.receive<NewNoteRequest>()
             .let { CreateNoteHandler.Input(it.body) }
             .let { createNoteHandler.handle(it) }
             .let {
                 when(it) {
                     is CreateNoteHandler.Output.Success -> call.respond(it.noteResponse)
-                    is CreateNoteHandler.Output.EmptyBody ->
-                        call.respondText("A non-empty body is required to create a note",
-                            status = HttpStatusCode.BadRequest)
+                    is CreateNoteHandler.Output.EmptyBody -> handleEmptyBody(call)
                 }
             }
+
+    private suspend fun handleUpdateNoteByIdCall(call: ApplicationCall, id: Int): Unit =
+        call.receive<NewNoteRequest>()
+            .let { UpdateNoteByIdHandler.Input(id, it.body) }
+            .let { updateNoteByIdHandler.handle(it) }
+            .let {
+                when (it) {
+                    is UpdateNoteByIdHandler.Output.Success -> call.respond(it.noteResponse)
+                    is UpdateNoteByIdHandler.Output.IdNotFound -> handleIdNotFound(call, id)
+                    is UpdateNoteByIdHandler.Output.EmptyBody -> handleEmptyBody(call)
+                }
+            }
+
+    private suspend fun handleIdNotFound(call: ApplicationCall, id: Int) =
+        call.respondText("ID '${id}' was not Found", status = HttpStatusCode.NotFound)
+
+    private suspend fun handleEmptyBody(call: ApplicationCall) =
+        call.respondText("A non-empty body is required to create a note", status = HttpStatusCode.BadRequest)
 }
 
 

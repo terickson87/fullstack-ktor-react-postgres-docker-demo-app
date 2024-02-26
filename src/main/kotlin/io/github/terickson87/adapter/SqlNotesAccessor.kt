@@ -42,9 +42,10 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
     override fun createNote(createBody: String): Note =
         transaction(database) {
             DbNote.new {
+                val localDateTimeNowUtc = getLocalDateTimeNowUtc()
                 body = createBody
-                createdAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
-                updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
+                createdAt = localDateTimeNowUtc
+                updatedAt = localDateTimeNowUtc
             }
         }.toNote()
 
@@ -63,17 +64,18 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
         }
 
     override fun updateNoteById(id: Int, body: String): Note? =
-        getDbNoteById(id)?.let {
-            transaction(database) {
+        transaction(database) {
+            DbNote.findByIdAndUpdate(id) {
                 it.body = body
-                it.updatedAt = LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC);
+                it.updatedAt = getLocalDateTimeNowUtc()
             }
-        }?.let {
-            getNoteById(id)
-        }
+        }?.toNote()
 
     override fun deleteNoteById(id: Int): Boolean =
         transaction(database) {
             DbNote.findById(id)?.delete()?.let { true } ?: false
         }
+
+    private fun getLocalDateTimeNowUtc(): LocalDateTime =
+        LocalDateTime.ofInstant(Instant.now(), DB_ZONE_OFFSET_UTC)
 }
