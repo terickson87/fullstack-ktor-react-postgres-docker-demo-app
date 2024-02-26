@@ -19,5 +19,4 @@ class CreateNoteHandler(private val notesAccessor: NotesAccessor) {
         notesAccessor.createNote(body)
             .toNoteResponse()
             .let { Output.Success(it) }
-
 }

@@ -12,40 +12,37 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 class NoteRouting(private val notesAccessor: NotesAccessor) {
-    val createNoteHandler = CreateNoteHandler(notesAccessor)
-    val getNoteByIdHandler = GetNoteByIdHandler(notesAccessor)
+    private val createNoteHandler = CreateNoteHandler(notesAccessor)
+    private val getNoteByIdHandler = GetNoteByIdHandler(notesAccessor)
 
-    companion object {
-        fun Route.noteRouting(notesAccessor: NotesAccessor) {
-            route("/notes") {
-                val noteRouting = NoteRouting(notesAccessor)
-                get("/all") {
-                    call.respondText("Get All Notes")
-                }
-                get("/{id?}") {
-                    call.validateCallId { noteRouting.handleGetNoteByIdCall(call, it) }
-                }
+    fun noteRouting(parentRoute: Route) = parentRoute {
+        route("/notes") {
+            get("/all") {
+                call.respondText("Get All Notes")
+            }
+            get("/{id?}") {
+                call.validateCallId { handleGetNoteByIdCall(call, it) }
+            }
 
-                post("/new") {
-                    noteRouting.handleCreateNoteCall(call)
-                }
+            post("/new") {
+                handleCreateNoteCall(call)
+            }
 
-                post("/update") {
-                    call.receiveText()
-                        .let { call.respondText("Post update contents:'$it'") }
-                }
+            post("/update") {
+                call.receiveText()
+                    .let { call.respondText("Post update contents:'$it'") }
+            }
 
-                post("/delete") {
-                    call.receiveText()
-                        .let { call.respondText("Post delete contents:'$it'") }
-                }
+            post("/delete") {
+                call.receiveText()
+                    .let { call.respondText("Post delete contents:'$it'") }
             }
         }
     }
 
-    suspend inline fun handleGetNoteByIdCall(call: ApplicationCall, id: Int): Unit =
+    private suspend fun handleGetNoteByIdCall(call: ApplicationCall, id: Int): Unit =
         GetNoteByIdHandler.Input(id)
-            .let { input -> getNoteByIdHandler.handle(input) }
+            .let { getNoteByIdHandler.handle(it) }
             .let {
                 when (it) {
                     is GetNoteByIdHandler.Output.Success -> call.respond(it.noteResponse)
@@ -54,7 +51,7 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
                 }
             }
 
-    suspend inline fun handleCreateNoteCall(call: ApplicationCall): Unit =
+    private suspend fun handleCreateNoteCall(call: ApplicationCall): Unit =
         call.receive<NoteRequest>()
             .let { CreateNoteHandler.Input(it.body) }
             .let { createNoteHandler.handle(it) }
