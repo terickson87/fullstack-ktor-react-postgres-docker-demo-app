@@ -1,0 +1,11 @@
+package io.github.terickson87.croprecordsservice.adapter.accessor
+
+import io.github.terickson87.croprecordsservice.domain.Note
+
+interface NotesAccessor {
+    fun createNote(createBody: String): Note
+    fun getAllNotes(): List<Note>
+    fun getNoteById(id: Int): Note?
+    fun updateNoteById(id: Int, body: String): Note?
+    fun deleteNoteById(id: Int): Boolean
+}
