@@ -1,13 +1,16 @@
 package io.github.terickson87.croprecordsservice.adapter
 
 import io.github.terickson87.croprecordsservice.adapter.accessor.NotesAccessor
+import io.github.terickson87.croprecordsservice.adapter.accessor.PagedData
 import io.github.terickson87.croprecordsservice.domain.Note
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.javatime.datetime
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 import java.time.LocalDateTime
@@ -18,6 +21,8 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
 
     companion object {
         val DB_ZONE_OFFSET_UTC: ZoneOffset = ZoneOffset.UTC
+        const val DEFAULT_GET_ALL_PAGE_SIZE = 20;
+        const val DEFAULT_GET_ALL_PAGE_OFFSET = 0L;
     }
 
     object NotesTable : IntIdTable() {
@@ -39,6 +44,13 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
             this.updatedAt.toInstant(DB_ZONE_OFFSET_UTC),
             this.body)
 
+    private fun ResultRow.toNote(): Note =
+        Note(this[NotesTable.id].value,
+            this[NotesTable.createdAt].toInstant(DB_ZONE_OFFSET_UTC),
+            this[NotesTable.updatedAt].toInstant(DB_ZONE_OFFSET_UTC),
+            this[NotesTable.body]
+        )
+
     override fun createNote(createBody: String): Note =
         transaction(database) {
             DbNote.new {
@@ -49,10 +61,15 @@ class SqlNotesAccessor(private val database: Database) : NotesAccessor {
             }
         }.toNote()
 
-    override fun getAllNotes(): List<Note> =
-        transaction(database) {
-            DbNote.all().toList()
-                .map { it.toNote() }
+    override fun getAllNotes(n: Int?, offset: Long?): PagedData<Note, Long> =
+        (n ?: DEFAULT_GET_ALL_PAGE_SIZE).let { thisPageSize ->
+            (offset ?: DEFAULT_GET_ALL_PAGE_OFFSET).let { thisOffset ->
+                transaction(database) {
+                     NotesTable.selectAll().limit(thisPageSize, thisOffset)
+                        .map { it.toNote() }
+                        .let{ PagedData(it, if (it.size < thisPageSize) null else thisOffset+thisPageSize)}
+                }
+            }
         }
 
     override fun getNoteById(id: Int): Note? =

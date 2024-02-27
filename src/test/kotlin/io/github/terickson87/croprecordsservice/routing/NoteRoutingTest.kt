@@ -1,8 +1,11 @@
 package io.github.terickson87.croprecordsservice.routing
 
 import io.github.terickson87.croprecordsservice.adapter.accessor.NotesAccessor
+import io.github.terickson87.croprecordsservice.adapter.accessor.PagedData
+import io.github.terickson87.croprecordsservice.domain.AllNotesResponsePage
 import io.github.terickson87.croprecordsservice.domain.Note
 import io.github.terickson87.croprecordsservice.domain.NewNoteRequest
+import io.github.terickson87.croprecordsservice.domain.PageInfo
 import io.github.terickson87.croprecordsservice.util.RouteTestFuncs
 import io.github.terickson87.croprecordsservice.util.testGet
 import io.github.terickson87.croprecordsservice.util.testPostJsonBody
@@ -31,10 +34,14 @@ class NoteRoutingTest : FunSpec({
     val notesAccessorMock: NotesAccessor = mockk()
 
     test("/notes/all should return as expected") {
-        RouteTestFuncs.testGet("/notes/all", mockk()) {
+        every { notesAccessorMock.getAllNotes(any(), any()) } returns PagedData(listOf(note), null)
+        val allNotesResponsePage = AllNotesResponsePage(listOf(noteResponse), PageInfo(1, null))
+        val pageInfo = PageInfo(1, 1L)
+        val pageInfoJson = Json.encodeToString(pageInfo)
+        RouteTestFuncs.testPostJsonBody("/notes/all", pageInfoJson, notesAccessorMock) {
             runBlocking {
                 it.status.shouldBe(HttpStatusCode.OK)
-                assertEquals("Get All Notes", it.bodyAsText())
+                it.body<AllNotesResponsePage>().shouldBe(allNotesResponsePage)
             }
         }
     }

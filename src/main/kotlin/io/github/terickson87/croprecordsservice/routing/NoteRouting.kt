@@ -2,9 +2,11 @@ package io.github.terickson87.croprecordsservice.routing
 
 import io.github.terickson87.croprecordsservice.adapter.accessor.NotesAccessor
 import io.github.terickson87.croprecordsservice.domain.NewNoteRequest
+import io.github.terickson87.croprecordsservice.domain.PageInfo
 import io.github.terickson87.croprecordsservice.domain.handlers.notes.GetNoteByIdHandler
 import io.github.terickson87.croprecordsservice.domain.handlers.notes.CreateNoteHandler
 import io.github.terickson87.croprecordsservice.domain.handlers.notes.DeleteNoteByIdHandler
+import io.github.terickson87.croprecordsservice.domain.handlers.notes.GetAllNotesPagedHandler
 import io.github.terickson87.croprecordsservice.domain.handlers.notes.IdValidator.Companion.validateCallId
 import io.github.terickson87.croprecordsservice.domain.handlers.notes.UpdateNoteByIdHandler
 import io.ktor.http.*
@@ -16,13 +18,14 @@ import io.ktor.server.routing.*
 class NoteRouting(private val notesAccessor: NotesAccessor) {
     private val createNoteHandler = CreateNoteHandler(notesAccessor)
     private val getNoteByIdHandler = GetNoteByIdHandler(notesAccessor)
+    private val getAllNotesPagedHandler = GetAllNotesPagedHandler(notesAccessor)
     private val updateNoteByIdHandler = UpdateNoteByIdHandler(notesAccessor)
     private val deleteNoteByIdHandler = DeleteNoteByIdHandler(notesAccessor)
 
     fun noteRouting(parentRoute: Route) = parentRoute {
         route("/notes") {
-            get("/all") {
-                call.respondText("Get All Notes")
+            post("/all") {
+                handleGetAllNotesCall(call)
             }
 
             get("/{id?}") {
@@ -42,7 +45,6 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
             }
         }
     }
-
     private suspend fun handleGetNoteByIdCall(call: ApplicationCall, id: Int): Unit =
         GetNoteByIdHandler.Input(id)
             .let { getNoteByIdHandler.handle(it) }
@@ -52,6 +54,17 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
                     is GetNoteByIdHandler.Output.IdNotFound -> handleIdNotFound(call, id)
                 }
             }
+
+    private suspend fun handleGetAllNotesCall(call: ApplicationCall): Unit =
+        call.receive<PageInfo<Int,Long>>()
+            .let { GetAllNotesPagedHandler.Input(it.pageSize, it.continuation) }
+            .let { getAllNotesPagedHandler.handle(it) }
+            .let {
+                when(it) {
+                    is GetAllNotesPagedHandler.Output.Success -> call.respond(it.allNotesResponsePage)
+                }
+            }
+
 
     private suspend fun handleCreateNoteCall(call: ApplicationCall): Unit =
         call.receive<NewNoteRequest>()

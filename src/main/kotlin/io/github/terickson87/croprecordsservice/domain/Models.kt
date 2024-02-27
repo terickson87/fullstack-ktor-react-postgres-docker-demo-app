@@ -14,6 +14,12 @@ data class NewNoteRequest(val body: String)
 data class NoteResponse(val id: Int, val createdAt: Instant, val modifiedAt: Instant, val body: String)
 
 @Serializable
+data class PageInfo<T,C>(val pageSize: T? = null, val continuation: C? = null)
+
+@Serializable
+data class AllNotesResponsePage(val notes: List<NoteResponse>, val pageInfo: PageInfo<Int, Long>)
+
+@Serializable
 data class ErrorResponse(val message: String)
 
 data class Note(val id: Int, val createdAt: Instant, val updatedAt: Instant, val body: String)
