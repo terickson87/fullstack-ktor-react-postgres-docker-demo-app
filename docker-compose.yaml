@@ -33,3 +33,7 @@ volumes:
 networks:
   front-end:
   back-end:
+
+  # TODO Add ENV vars in a .env file
+  # pull same values in application.conf https://ktor.io/docs/configuration-file.html#environment-variables
+  # and in Kotlin files https://stackoverflow.com/a/48104838/2561852
