@@ -7,4 +7,4 @@ pluginManagement {
         id("io.ktor.plugin") version ktorVersion
     }
 }
-rootProject.name = "io.github.terickson87.crop-records-service"
+rootProject.name = "io.github.terickson87.dullstack-ktor-react-postgres-docker-demo-app"

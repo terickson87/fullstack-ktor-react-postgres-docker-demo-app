@@ -1,0 +1,13 @@
+package io.github.terickson87.ktorpostgresdemo.plugins
+
+import io.github.terickson87.ktorpostgresdemo.adapter.accessor.NotesAccessor
+import io.github.terickson87.ktorpostgresdemo.routing.NoteRouting
+import io.ktor.server.application.*
+import io.ktor.server.routing.*
+
+fun Application.configureRouting(notesAccessor: NotesAccessor) {
+    routing {
+        val noteRouting = NoteRouting(notesAccessor)
+        noteRouting.noteRouting(this)
+    }
+}
