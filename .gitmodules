@@ -1,0 +1,4 @@
+[submodule "fullstack-frontend-demo-react-vite"]
+	path = fullstack-frontend-demo-react-vite
+	url = git@github.com:terickson87/fullstack-frontend-demo-react-vite.git
+	branch = main
