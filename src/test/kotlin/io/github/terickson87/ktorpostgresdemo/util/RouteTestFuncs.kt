@@ -1,6 +1,7 @@
 package io.github.terickson87.ktorpostgresdemo.util
 
 import io.github.terickson87.ktorpostgresdemo.adapter.accessor.NotesAccessor
+import io.github.terickson87.ktorpostgresdemo.plugins.configureJson
 import io.github.terickson87.ktorpostgresdemo.plugins.configureRouting
 import io.github.terickson87.ktorpostgresdemo.plugins.configureSerialization
 import io.ktor.client.*
@@ -17,21 +18,22 @@ class RouteTestFuncs {
     companion object {}
 }
 
-fun RouteTestFuncs.Companion.baseCall(notesAccessor: NotesAccessor? = null, block: (HttpClient) -> Unit): Unit =
-    testApplication {
-        val client = createClient {
-            this.install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    ignoreUnknownKeys = true
-                    encodeDefaults = true
-                })
-            }
+fun ApplicationTestBuilder.buildClient(): HttpClient =
+    createClient {
+        this.install(ContentNegotiation) {
+            json(Json {
+                configureJson()
+            })
         }
+    }
+
+fun RouteTestFuncs.Companion.baseCall(notesAccessor: NotesAccessor? = null, block: suspend (HttpClient) -> Unit): Unit =
+    testApplication {
         application {
             configureSerialization()
             configureRouting(notesAccessor ?: mockk())
         }
+        val client = buildClient()
         block(client)
     }
 
@@ -39,21 +41,9 @@ fun RouteTestFuncs.Companion.testGet(
     path: String,
     notesAccessor: NotesAccessor,
     verifyBlock: (HttpResponse) -> Unit): Unit =
-    testApplication {
-        val client = createClient {
-            this.install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    ignoreUnknownKeys = true
-                    encodeDefaults = true
-                })
-            }
-        }
-        application {
-            configureSerialization()
-            configureRouting(notesAccessor)
-        }
-        client.get(path).apply { verifyBlock(this) }
+    baseCall(notesAccessor) {
+        it.get(path)
+            .apply { verifyBlock(this) }
     }
 
 inline fun <reified T> RouteTestFuncs.Companion.testPostJsonBody(
@@ -61,22 +51,8 @@ inline fun <reified T> RouteTestFuncs.Companion.testPostJsonBody(
     bodyToSet: T,
     notesAccessor: NotesAccessor,
     crossinline verifyBlock: (HttpResponse) -> Unit): Unit =
-    testApplication {
-        val client = createClient {
-            this.install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    ignoreUnknownKeys = true
-                    encodeDefaults = true
-                })
-            }
-        }
-        application {
-            configureSerialization()
-            configureRouting(notesAccessor)
-        }
-
-        client.post(path) {
+    baseCall(notesAccessor) {
+        it.post(path) {
             contentType(ContentType.Application.Json)
             setBody(bodyToSet)
         }
