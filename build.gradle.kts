@@ -67,6 +67,12 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresqlDriverVersion")
 }
 
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_21)
+    }
+}
+
 tasks.withType<Test>().configureEach {
    useJUnitPlatform()
 }
@@ -79,8 +85,17 @@ tasks.jacocoTestReport {
     dependsOn(tasks.test) // tests are required to run before generating the report
 }
 
-ktor {
-    docker {
-        jreVersion.set(JavaVersion.VERSION_21)
-    }
+val frontEndNpmInstall = task<Exec>("frontEndNpmInstall") {
+    workingDir("fullstack-frontend-demo-react-vite")
+    commandLine("npm", "install")
+}
+
+val frontEndNpmBuild = task<Exec>("frontEndNpmBuild") {
+    workingDir("fullstack-frontend-demo-react-vite")
+    commandLine("npm", "run", "build")
+}
+
+val frontEndCopyDist = task<Copy>("frontEndCopyDist") {
+    from("fullstack-frontend-demo-react-vite/dist")
+    into("/website")
 }
