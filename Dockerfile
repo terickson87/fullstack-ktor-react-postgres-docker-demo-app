@@ -1,5 +1,11 @@
 FROM gradle:8.6-jdk21-alpine as BackendBuild
-COPY --chown=gradle:gradle . /app
+COPY --chown=gradle:gradle gradle /app/gradle
+COPY --chown=gradle:gradle gradlew /app
+COPY --chown=gradle:gradle gradle.properties /app
+COPY --chown=gradle:gradle build.gradle.kts /app
+COPY --chown=gradle:gradle settings.gradle.kts /app
+COPY --chown=gradle:gradle src /app/src
+#COPY --chown=gradle:gradle . /app
 WORKDIR /app
 RUN gradle buildFatJar --no-daemon
 
