@@ -4,6 +4,8 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    environment:
+      - DB_HOST=postgres:5432
     depends_on:
       postgres:
         condition: service_healthy
@@ -13,6 +15,8 @@ services:
   postgres:
     image: postgres:16
     restart: unless-stopped
+    ports:
+      - "5432:5432"
     volumes:
       - ktor-sample-postgres-db-data:/var/lib/postgresql/data
     environment:
