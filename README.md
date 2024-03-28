@@ -7,6 +7,25 @@ This is a demo fullstack app using:
 * Docker
 * Docker Compose
 
+## Checking out the repository
+This repository uses git submodules. So in order to to clone it out use:
+`git clone --recurse-submodules git@github.com:terickson87/fullstack-ktor-react-postgres-docker-demo-app.git`
+
+If you cloned it without using the `--recurse-submodules` flag, you then must run the command: `git submodule update --init --recursive`. At this point there shouldn't be any recursive submodules, but it is the reccommeded "foolproof" way to clone a repo with submodules.
+
+To pull changes in the submodules use the command: `git submodule update --remote`.
+
+If you have local changes to the submodule that you want to merge the upstream submodule changes into, then use the command: `git submodule update --remote --merge`
+
+If you have local changes to the submodule that you want to rebase on top of the upstream submodule changes, then use the command: `git submodule update --remote --rebase`
+
+Then, in order to push the changes to the main repository, to make sure any submodule changes are pushed too, use the command: `git push --recurse-submodules=check`
+
+Some Submodules References:
+https://git-scm.com/docs/gitsubmodules  
+https://git-scm.com/docs/git-submodule  
+https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
 ## Local dev
 To run the app as a dev locally, you can either run the whole thing with:  
 `docker compose up --build`  
