@@ -97,5 +97,5 @@ val frontEndNpmBuild = task<Exec>("frontEndNpmBuild") {
 
 val frontEndCopyDist = task<Copy>("frontEndCopyDist") {
     from("fullstack-frontend-demo-react-vite/dist")
-    into("/website")
+    into("website")
 }
