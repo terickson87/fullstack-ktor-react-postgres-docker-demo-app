@@ -85,17 +85,43 @@ tasks.jacocoTestReport {
     dependsOn(tasks.test) // tests are required to run before generating the report
 }
 
+tasks.clean {
+    delete("website")
+}
+
 val frontEndNpmInstall = task<Exec>("frontEndNpmInstall") {
+    group = "FrontEnd"
+    displayIsRunning()
     workingDir("fullstack-frontend-demo-react-vite")
     commandLine("npm", "install")
 }
 
 val frontEndNpmBuild = task<Exec>("frontEndNpmBuild") {
+    group = "FrontEnd"
+    displayIsRunning()
     workingDir("fullstack-frontend-demo-react-vite")
     commandLine("npm", "run", "build")
 }
 
 val frontEndCopyDist = task<Copy>("frontEndCopyDist") {
+    group = "FrontEnd"
+    displayIsRunning()
     from("fullstack-frontend-demo-react-vite/dist")
     into("website")
 }
+
+val frontEndClearWebsite = task("frontEndClearWebsite") {
+    group = "FrontEnd"
+    displayIsRunning()
+    doFirst { delete("website") }
+}
+
+val frontEndRebuildAndCopy = task("frontEndRebuildAndCopy") {
+    group = "FrontEnd"
+    dependsOn(frontEndClearWebsite, frontEndNpmInstall, frontEndNpmBuild, frontEndCopyDist)
+    frontEndNpmBuild.mustRunAfter(frontEndNpmInstall)
+    frontEndCopyDist.mustRunAfter(frontEndClearWebsite)
+    frontEndCopyDist.mustRunAfter(frontEndNpmBuild)
+}
+
+fun Task.displayIsRunning() = doFirst { println("Running gradle task: '$name'") }
