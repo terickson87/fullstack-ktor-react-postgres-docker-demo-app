@@ -21,5 +21,3 @@ data class AllNotesResponsePage(val notes: List<NoteResponse>, val pageInfo: Pag
 
 @Serializable
 data class ErrorResponse(val message: String)
-
-data class Note(val id: Int, val createdAt: Instant, val updatedAt: Instant, val body: String)

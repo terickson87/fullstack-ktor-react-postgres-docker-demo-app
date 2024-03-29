@@ -1,7 +1,7 @@
 package io.github.terickson87.ktorpostgresdemo.domain.handlers.notes
 
 import io.github.terickson87.ktorpostgresdemo.adapter.accessor.NotesAccessor
-import io.github.terickson87.ktorpostgresdemo.domain.Note
+import io.github.terickson87.ktorpostgresdemo.adapter.accessor.Note
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf

@@ -1,8 +1,5 @@
-package io.github.terickson87.ktorpostgresdemo.adapter
+package io.github.terickson87.ktorpostgresdemo.adapter.accessor
 
-import io.github.terickson87.ktorpostgresdemo.adapter.accessor.NotesAccessor
-import io.github.terickson87.ktorpostgresdemo.adapter.accessor.PagedData
-import io.github.terickson87.ktorpostgresdemo.domain.Note
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID

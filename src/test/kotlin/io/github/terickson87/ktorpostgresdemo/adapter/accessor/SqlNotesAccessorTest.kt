@@ -1,4 +1,4 @@
-package io.github.terickson87.ktorpostgresdemo.adapter
+package io.github.terickson87.ktorpostgresdemo.adapter.accessor
 
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.AnnotationSpec

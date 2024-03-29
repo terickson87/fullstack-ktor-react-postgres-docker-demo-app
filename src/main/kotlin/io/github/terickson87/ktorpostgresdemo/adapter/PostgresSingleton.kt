@@ -1,5 +1,6 @@
 package io.github.terickson87.ktorpostgresdemo.adapter
 
+import io.github.terickson87.ktorpostgresdemo.adapter.accessor.SqlNotesAccessor
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction

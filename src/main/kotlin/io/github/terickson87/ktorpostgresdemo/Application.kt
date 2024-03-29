@@ -1,7 +1,7 @@
 package io.github.terickson87.ktorpostgresdemo
 
 import io.github.terickson87.ktorpostgresdemo.adapter.PostgresSingleton
-import io.github.terickson87.ktorpostgresdemo.adapter.SqlNotesAccessor
+import io.github.terickson87.ktorpostgresdemo.adapter.accessor.SqlNotesAccessor
 import io.github.terickson87.ktorpostgresdemo.plugins.configureHTTP
 import io.github.terickson87.ktorpostgresdemo.plugins.configureMonitoring
 import io.github.terickson87.ktorpostgresdemo.plugins.configureRouting

@@ -3,7 +3,7 @@ package io.github.terickson87.ktorpostgresdemo.routing
 import io.github.terickson87.ktorpostgresdemo.adapter.accessor.NotesAccessor
 import io.github.terickson87.ktorpostgresdemo.adapter.accessor.PagedData
 import io.github.terickson87.ktorpostgresdemo.domain.AllNotesResponsePage
-import io.github.terickson87.ktorpostgresdemo.domain.Note
+import io.github.terickson87.ktorpostgresdemo.adapter.accessor.Note
 import io.github.terickson87.ktorpostgresdemo.domain.NewNoteRequest
 import io.github.terickson87.ktorpostgresdemo.domain.PageInfo
 import io.github.terickson87.ktorpostgresdemo.util.RouteTestFuncs
