@@ -120,8 +120,8 @@ val frontEndRebuildAndCopy = task("frontEndRebuildAndCopy") {
     group = "FrontEnd"
     dependsOn(frontEndClearWebsite, frontEndNpmInstall, frontEndNpmBuild, frontEndCopyDist)
     frontEndNpmBuild.mustRunAfter(frontEndNpmInstall)
+    frontEndClearWebsite.mustRunAfter(frontEndNpmBuild)
     frontEndCopyDist.mustRunAfter(frontEndClearWebsite)
-    frontEndCopyDist.mustRunAfter(frontEndNpmBuild)
 }
 
 fun Task.displayIsRunning() = doFirst { println("Running gradle task: '$name'") }
