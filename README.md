@@ -11,7 +11,8 @@ This is a demo fullstack app using:
 This repository uses git submodules. So in order to to clone it out use:
 `git clone --recurse-submodules git@github.com:terickson87/fullstack-ktor-react-postgres-docker-demo-app.git`
 
-If you cloned it without using the `--recurse-submodules` flag, you then must run the command: `git submodule update --init --recursive`. At this point there shouldn't be any recursive submodules, but it is the reccommeded "foolproof" way to clone a repo with submodules.
+### Using Git Submodules
+If you cloned it without using the `--recurse-submodules` flag, you then must run the command: `git submodule update --init --recursive`. At this point there shouldn't be any recursive submodules, but it is the recommended "foolproof" way to clone a repo with submodules.
 
 To pull changes in the submodules use the command: `git submodule update --remote`.
 
