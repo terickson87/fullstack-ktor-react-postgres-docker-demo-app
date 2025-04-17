@@ -1,4 +1,4 @@
-FROM gradle:8.6-jdk21-alpine as BackendBuild
+FROM gradle:8.6-jdk21-alpine as backend-build
 COPY --chown=gradle:gradle gradle /app/gradle
 COPY --chown=gradle:gradle gradlew /app
 COPY --chown=gradle:gradle gradle.properties /app
@@ -9,14 +9,8 @@ COPY --chown=gradle:gradle src /app/src
 WORKDIR /app
 RUN gradle buildFatJar --no-daemon
 
-FROM node:21-alpine3.19 as FrontendBuild
-COPY fullstack-frontend-demo-react-vite /website
-WORKDIR /website
-RUN npm ci && npm run build
-
 FROM amazoncorretto:21-alpine3.19
-COPY --from=FrontendBuild /website/dist /bin/website
-COPY --from=BackendBuild /app/build/libs/*-all.jar /bin/app.jar
+COPY --from=backend-build /app/build/libs/*-all.jar /bin/app.jar
 WORKDIR /bin
 CMD ["java","-jar","app.jar"]
 

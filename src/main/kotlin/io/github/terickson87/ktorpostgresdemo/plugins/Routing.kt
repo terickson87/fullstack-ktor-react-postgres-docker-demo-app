@@ -10,9 +10,5 @@ fun Application.configureRouting(notesAccessor: NotesAccessor) {
     routing {
         val noteRouting = NoteRouting(notesAccessor)
         noteRouting.noteRouting(this)
-        singlePageApplication {
-            react("website")
-            // you need to copy the files over because they aren't being copied to the docker container
-        }
     }
 }

@@ -1,4 +1,12 @@
 services:
+  front-end:
+    build: ./fullstack-frontend-demo-react-vite
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - front-end
+
   api:
     build: .
     restart: unless-stopped
@@ -11,6 +19,7 @@ services:
         condition: service_healthy
     networks:
       - back-end
+      - front-end
 
   postgres:
     image: postgres:16
@@ -44,6 +53,7 @@ services:
         condition: service_healthy
     networks:
       - back-end
+      - front-end
 
 volumes:
   ktor-sample-postgres-db-data:
