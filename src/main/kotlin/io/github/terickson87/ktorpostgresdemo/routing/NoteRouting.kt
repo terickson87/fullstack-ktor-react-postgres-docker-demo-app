@@ -24,8 +24,12 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
 
     fun noteRouting(parentRoute: Route) = parentRoute {
         route("/notes") {
-            get("/all") {
+            get( "/all") {
                 handleGetAllNotesCall(call)
+            }
+
+            post("/all") {
+                handleGetAllNotesPostCall(call)
             }
 
             get("/{id?}") {
@@ -45,6 +49,7 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
             }
         }
     }
+
     private suspend fun handleGetNoteByIdCall(call: ApplicationCall, id: Int): Unit =
         GetNoteByIdHandler.Input(id)
             .let { getNoteByIdHandler.handle(it) }
@@ -54,10 +59,19 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
                     is GetNoteByIdHandler.Output.IdNotFound -> handleIdNotFound(call, id)
                 }
             }
-
+    
     private suspend fun handleGetAllNotesCall(call: ApplicationCall): Unit =
-        call.receive<PageInfo<Int,Long>>()
-            .let { GetAllNotesPagedHandler.Input(it.pageSize, it.continuation) }
+        GetAllNotesPagedHandler.Input(null, null)
+        .let { getAllNotesPagedHandler.handle(it) }
+        .let {
+            when(it) {
+                is GetAllNotesPagedHandler.Output.Success -> call.respond(it.allNotesResponsePage)
+            }
+        }
+
+    private suspend fun handleGetAllNotesPostCall(call: ApplicationCall): Unit =
+        call.receiveNullable<PageInfo<Int,Long>>()
+            .let { GetAllNotesPagedHandler.Input(it?.pageSize, it?.continuation) }
             .let { getAllNotesPagedHandler.handle(it) }
             .let {
                 when(it) {
