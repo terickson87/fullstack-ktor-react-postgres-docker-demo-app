@@ -24,7 +24,7 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
 
     fun noteRouting(parentRoute: Route) = parentRoute {
         route("/notes") {
-            post("/all") {
+            get("/all") {
                 handleGetAllNotesCall(call)
             }
 

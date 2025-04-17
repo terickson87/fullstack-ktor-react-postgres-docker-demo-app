@@ -1,4 +1,4 @@
-FROM gradle:8.6-jdk21-alpine as backend-build
+FROM gradle:8.6-jdk21-alpine AS backend-build
 COPY --chown=gradle:gradle gradle /app/gradle
 COPY --chown=gradle:gradle gradlew /app
 COPY --chown=gradle:gradle gradle.properties /app
