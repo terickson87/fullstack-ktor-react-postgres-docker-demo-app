@@ -1,0 +1,17 @@
+meta {
+  name: Update
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8080/notes/update/2
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "body": "updated body"
+  }
+}

@@ -1,0 +1,18 @@
+meta {
+  name: Get All Post
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:8080/notes/all
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "pageSize": 1,
+    "continuation": null
+  }
+}
