@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.register
 
 val ktorVersion: String by project
 val kotlinVersion: String by project
@@ -6,6 +7,7 @@ val exposedVersion: String by project
 val postgresqlDriverVersion: String by project
 val kotestVersion: String by project
 val mockkVersion: String by project
+val swaggerCodegenVersion: String by project
 
 // Plugin versions are maintained in settings.gradle.kts, pluginManagement section
 plugins {
@@ -13,6 +15,7 @@ plugins {
     id("io.ktor.plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
     jacoco
+    idea
 }
 
 group = "io.github.terickson87"
@@ -41,7 +44,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     // Testing
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     // Ktor client
@@ -73,6 +76,12 @@ ktor {
     }
 }
 
+idea {
+    module {
+        excludeDirs = setOf(file("bin"))
+    }
+}
+
 tasks.withType<Test>().configureEach {
    useJUnitPlatform()
 }
@@ -85,24 +94,24 @@ tasks.jacocoTestReport {
     dependsOn(tasks.test) // tests are required to run before generating the report
 }
 
-val frontEndNpmInstall = task<Exec>("frontEndNpmInstall") {
+val frontEndNpmInstall = tasks.register<Exec>("frontEndNpmInstall") {
     group = "FrontEnd"
     displayIsRunning()
     workingDir("fullstack-frontend-demo-react-vite")
     commandLine("npm", "install")
 }
 
-val frontEndNpmBuild = task<Exec>("frontEndNpmBuild") {
+val frontEndNpmBuild = tasks.register<Exec>("frontEndNpmBuild") {
     group = "FrontEnd"
     displayIsRunning()
     workingDir("fullstack-frontend-demo-react-vite")
     commandLine("npm", "run", "build")
+    mustRunAfter(frontEndNpmInstall)
 }
 
-val frontEndRebuild = task("frontEndRebuildAndCopy") {
+val frontEndRebuild = tasks.register("frontEndRebuildAndCopy") {
     group = "FrontEnd"
     dependsOn(frontEndNpmInstall, frontEndNpmBuild)
-    frontEndNpmBuild.mustRunAfter(frontEndNpmInstall)
 }
 
 fun Task.displayIsRunning() = doFirst { println("Running gradle task: '$name'") }

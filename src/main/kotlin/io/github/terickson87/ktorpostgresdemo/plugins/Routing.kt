@@ -9,6 +9,5 @@ import io.ktor.server.routing.*
 fun Application.configureRouting(notesAccessor: NotesAccessor) {
     routing {
         val noteRouting = NoteRouting(notesAccessor)
-        noteRouting.noteRouting(this)
-    }
+        note
 }

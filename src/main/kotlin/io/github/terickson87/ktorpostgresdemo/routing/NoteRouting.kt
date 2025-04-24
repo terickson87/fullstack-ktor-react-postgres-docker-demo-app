@@ -22,7 +22,7 @@ class NoteRouting(private val notesAccessor: NotesAccessor) {
     private val updateNoteByIdHandler = UpdateNoteByIdHandler(notesAccessor)
     private val deleteNoteByIdHandler = DeleteNoteByIdHandler(notesAccessor)
 
-    fun noteRouting(parentRoute: Route) = parentRoute {
+    fun Application.noteRoutes() {
         route("/notes") {
             get( "/all") {
                 handleGetAllNotesCall(call)
