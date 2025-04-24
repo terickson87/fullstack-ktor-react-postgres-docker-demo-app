@@ -41,7 +41,7 @@ and in another terminal running:
 `./gradlew frontEndNpmBuild`  
 `./gradlew frontEndCopyDist`  
 `./gradlew build`  
-`java -jar build/libs/io.github.terickson87.dullstack-ktor-react-postgres-docker-demo-app-all.jar -port=8080`
+`java -jar build/libs/io.github.terickson87.fullstack-ktor-react-postgres-docker-demo-app-all.jar -port=8080`
 
 ### WSL note:
 If you are running the app on WSL, you need to look up your WSL ip for local dev running with `ifconfig`, and then use
